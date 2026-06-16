@@ -19,7 +19,7 @@
   .hL { display:flex; align-items:center; gap:10px; }
   .hR { display:flex; align-items:center; gap:10px; justify-content:flex-end; }
   .lbl { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--dw-caption); }
-  .recalled .n { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; line-height:1; }
+  .score .n { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; line-height:1; }
   .hearts { text-align:center; }
   .hearts .row { font-size: 20px; letter-spacing: 4px; line-height:1; }
   .skip { text-align:right; }
@@ -28,7 +28,7 @@
   .title { text-align:center; font-size:13px; color:var(--dw-caption); }
   .title b { color:#fff; font-weight:700; }
 
-  .arena { display:grid; grid-template-columns: 1fr minmax(300px,360px) 250px; gap:14px; min-height:0; }
+  .arena { display:grid; grid-template-columns: 1fr minmax(320px,420px); gap:14px; min-height:0; }
   .panel { position:relative; border-radius:16px; overflow:hidden; }
   .graphwrap { border:1px solid rgba(80,130,220,.25); background:radial-gradient(600px 380px at 50% 55%, rgba(17,80,159,.18), rgba(0,12,54,0) 70%); }
   #graph,#fx { position:absolute; inset:0; width:100%; height:100%; display:block; } #fx{pointer-events:none;}
@@ -40,6 +40,11 @@
   .combo.on { opacity:1; }
   .combo .x { font-size:36px; font-weight:800; color:var(--dw-amber); text-shadow:0 0 22px rgba(251,174,64,.7); line-height:1; }
   .combo .t { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--dw-caption); }
+  .bigReveal { position:absolute; left:50%; top:40%; transform:translate(-50%,-50%) scale(.92); width:88%; text-align:center; pointer-events:none; opacity:0; z-index:5; transition:opacity .18s, transform .18s; }
+  .bigReveal.on { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .bigReveal .brMain { font-size:30px; font-weight:800; color:#fff; line-height:1.15; text-shadow:0 0 28px rgba(126,217,87,.55); }
+  .bigReveal .brSub { font-size:14px; color:#cdd6ea; margin-top:8px; line-height:1.3; }
+  @media (max-width:720px){ .bigReveal .brMain{ font-size:23px; } .bigReveal .brSub{ font-size:12px; } }
 
   .center { display:grid; grid-template-rows: 1fr auto auto; gap:12px; }
   .qcard { border-radius:16px; padding:18px; display:grid; align-content:center; justify-items:center; gap:12px; text-align:center; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.14); }
@@ -57,17 +62,6 @@
   .hint { text-align:center; font-size:11px; color:var(--dw-caption); }
   .hint b { color:#cdd6ea; }
 
-  .stackcol { border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); padding:12px; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; }
-  .stackcol h3 { font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--dw-caption); font-weight:700; }
-  .stackcol h3 span { color:#7b8696; }
-  .nowbuild { font-size:12px; color:var(--dw-caption); min-height:34px; display:grid; align-content:center; }
-  .nowbuild b { color:#fff; font-size:13px; } .nowbuild .again { color:var(--dw-orange); font-weight:700; }
-  .layers { display:grid; gap:6px; align-content:start; }
-  .layer { height:26px; border-radius:7px; display:flex; align-items:center; padding:0 9px; font-size:11px; letter-spacing:.3px; color:var(--dw-caption); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); position:relative; overflow:hidden; }
-  .layer .lfill { position:absolute; inset:0; width:0%; background:rgba(123,134,150,.5); transition:width .1s linear; }
-  .layer span { position:relative; z-index:1; }
-  .sfoot { font-size:11px; color:var(--dw-caption); text-align:center; line-height:1.35; }
-  .sfoot b { color:#aeb6c4; }
   @keyframes shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-4px,1px)} 50%{transform:translate(3px,-2px)} 75%{transform:translate(-2px,2px)} }
   .shake { animation: shake .32s; }
 
@@ -88,14 +82,35 @@
   .subStats { display:flex; justify-content:center; gap:34px; margin:10px 0; }
   .subStats .n { font-size:24px; font-weight:800; } .subStats .l { font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:var(--dw-caption); margin-top:4px; }
   #curve { width:100%; height:120px; margin-top:6px; border-radius:10px; background:rgba(0,7,31,.4); border:1px solid rgba(255,255,255,.08); }
+
+  /* ---- Mobile ---- */
+  @media (max-width: 720px) {
+    #app { padding: 8px 10px 10px; gap: 8px; height: 100dvh; }
+    header { gap: 6px; }
+    .lbl { font-size: 8px; letter-spacing: .8px; }
+    .score .n, .skip .n { font-size: 22px; } .hearts .row { font-size: 17px; letter-spacing: 3px; }
+    .title { font-size: 11px; line-height: 1.25; }
+    .arena { grid-template-columns: 1fr; grid-template-rows: minmax(180px, 1fr) auto; gap: 10px; }
+    .center { grid-template-rows: auto auto auto; gap: 10px; }
+    .qcard { padding: 12px; gap: 8px; }
+    .chip { font-size: 18px; padding: 8px 14px; }
+    .qcard .prompt { font-size: 13px; }
+    .dbtn { padding: 18px 8px; font-size: 18px; }
+    .hint { font-size: 10px; }
+    .legend { max-width: 68%; gap: 6px; top: 6px; }
+    #mute { top: 8px; right: 10px; }
+    .panelbox { padding: 22px 18px; } .panelbox h2 { font-size: 21px; }
+    .rules { grid-template-columns: 1fr; }
+    .heroStat .n { font-size: 42px; } .subStats { gap: 24px; }
+  }
 </style>
 </head>
 <body>
 <button id="mute" title="Sound">&#128266;</button>
 <div id="app">
   <header>
-    <div class="hL recalled"><div><div class="lbl">Parties remembered</div><div class="n" id="recalled">0</div></div></div>
-    <div class="hearts"><div class="lbl">Memory</div><div class="row" id="hearts">&#9679;&#9679;&#9679;</div></div>
+    <div class="hL score"><div><div class="lbl">Score</div><div class="n" id="score">0</div></div></div>
+    <div class="hearts"><div class="lbl">Memory / Life</div><div class="row" id="hearts">&#9679;&#9679;&#9679;</div></div>
     <div class="hR skip"><div><div class="lbl">Rebuilds you skipped</div><div class="n" id="skipped">0</div></div></div>
   </header>
 
@@ -106,12 +121,8 @@
       <canvas id="graph"></canvas>
       <canvas id="fx"></canvas>
       <div class="ptag">Your Knowledge Graph &middot; your memory</div>
-      <div class="legend">
-        <span><i style="background:var(--t-person)"></i>Person</span>
-        <span><i style="background:var(--t-company)"></i>Company</span>
-        <span><i style="background:var(--t-account)"></i>Account</span>
-        <span><i style="background:var(--t-address)"></i>Address</span>
-      </div>
+      <div class="legend" id="legend"></div>
+      <div class="bigReveal" id="bigReveal"><div class="brMain" id="brMain"></div><div class="brSub" id="brSub"></div></div>
       <div class="combo" id="combo"><div class="x" id="comboX">x2</div><div class="t">memory combo</div></div>
     </div>
 
@@ -125,20 +136,7 @@
         <button class="dbtn new" id="btnNew">New<span class="k">&#9664; model it</span></button>
         <button class="dbtn reuse" id="btnReuse">Seen it<span class="k">reuse from memory &#9654;</span></button>
       </div>
-      <div class="hint">Already in your graph? <b>Seen it</b>. First time? <b>New</b>. Keys <b>&#9664; &#9654;</b>. Three memory slips and you're out.</div>
-    </div>
-
-    <div class="panel stackcol" id="stackcol">
-      <h3>The Stack <span>&middot; no memory</span></h3>
-      <div class="nowbuild" id="nowbuild">idle</div>
-      <div class="layers" id="layers">
-        <div class="layer" data-l="0"><div class="lfill"></div><span>Ingest</span></div>
-        <div class="layer" data-l="1"><div class="lfill"></div><span>Stage</span></div>
-        <div class="layer" data-l="2"><div class="lfill"></div><span>Model</span></div>
-        <div class="layer" data-l="3"><div class="lfill"></div><span>Mart</span></div>
-        <div class="layer" data-l="4"><div class="lfill"></div><span>Serve</span></div>
-      </div>
-      <div class="sfoot">Re-derivations so far: <b id="rebuildTotal">0</b><br>It never learns a party.</div>
+      <div class="hint">Already in your graph? <b>Seen it</b>. First time? <b>New</b>. Three memory slips ends the run.</div>
     </div>
   </div>
 </div>
@@ -153,7 +151,7 @@
       <div class="rule new"><b>&#9664; New</b>First time. Add it to your graph once, then you'll remember it.</div>
     </div>
     <p>Every time you recognise a party, you <b>skip a rebuild</b> the stack can't. It re-derives the same parties forever, because it remembers nothing.</p>
-    <p style="color:#fff"><b>Three memory slips and the run ends. How many parties can you hold?</b></p>
+    <p style="color:#fff"><b>Answer fast for a bigger score. Three memory slips and the run ends.</b></p>
     <button class="playbtn" id="startBtn">Start &#9654;</button>
     <div class="tagline">The graph is your <b>externalised memory</b>. That's the whole thesis.</div>
   </div>
@@ -163,8 +161,9 @@
 <div class="overlay hidden" id="endOverlay">
   <div class="panelbox">
     <h2 id="endTitle">Your Memory Slipped</h2>
-    <div class="heroStat"><div class="n" id="endSkip">0</div><div class="l">Rebuilds your memory skipped</div></div>
+    <div class="heroStat"><div class="n" id="endScore" style="color:#fff">0</div><div class="l">Score</div></div>
     <div class="subStats">
+      <div><div class="n" id="endSkip" style="color:#F26B43">0</div><div class="l">Rebuilds you skipped</div></div>
       <div><div class="n" id="endRecall" style="color:#5aa0ff">0</div><div class="l">Parties remembered</div></div>
       <div><div class="n" id="endWaste" style="color:#aeb6c4">0</div><div class="l">Stack re-derivations</div></div>
     </div>
@@ -180,8 +179,9 @@
   "use strict";
 
   // ---------- Entities (typed) ----------
-  const T = { person:"person", company:"company", account:"account", address:"address" };
-  const TCOL = { person:"#6bb0ff", company:"#5ec8c0", account:"#f0a24a", address:"#b48ff0" };
+  const T = { person:"person", company:"company", account:"account", address:"address", device:"device", vessel:"vessel" };
+  const TCOL = { person:"#6bb0ff", company:"#5ec8c0", account:"#f0a24a", address:"#b48ff0", device:"#7ed957", vessel:"#f78fb3" };
+  const TNAME = { person:"Person", company:"Company", account:"Account", address:"Address", device:"Device", vessel:"Vessel" };
   const POOL = [
     ["K. Novak",T.person],["R. Santos",T.person],["M. Okonkwo",T.person],["Cyrus Vale",T.person],
     ["L. Petrov",T.person],["D. Halvorsen",T.person],["A. Cho",T.person],["J. Mwangi",T.person],
@@ -190,8 +190,12 @@
     ["Nile Imports",T.company],["Pearl Group",T.company],
     ["Onyx Pay",T.account],["Vortex Capital",T.account],["Indigo Fund",T.account],["Dune Capital",T.account],
     ["Cobalt Bank",T.account],["Orion Bank",T.account],["Delta Trust",T.account],
-    ["Pier 7 Depot",T.address],["14 Marlow St",T.address],["Quay Block C",T.address],["Unit 9 Harbridge",T.address],["West Dock 3",T.address]
+    ["Pier 7 Depot",T.address],["14 Marlow St",T.address],["Quay Block C",T.address],["Unit 9 Harbridge",T.address],["West Dock 3",T.address],
+    ["Server R4",T.device],["SIM #4471",T.device],["Burner 12",T.device],["Laptop X92",T.device],["Node 7",T.device],
+    ["Tasman",T.vessel],["Corsair",T.vessel],["Barge 19",T.vessel],["Azure",T.vessel],["Tug 3",T.vessel]
   ].map(([name,type])=>({name,type}));
+  const START_TYPES = ["person","company","account","address"]; // available from the off
+  const TYPE_INTRO = [{type:"device",at:8},{type:"vessel",at:15}]; // new entity types introduced as the roster grows
   const SEED_COUNT = 5;
   const PROMPTS = [
     "Trace the funds through {E}.","Who is connected to {E}?","Flag every account tied to {E}.",
@@ -205,8 +209,9 @@
   const S = {
     started:false, ended:false,
     known:new Map(),        // name -> {name,type}
-    q:null, combo:0, slips:0,
+    q:null, combo:0, slips:0, score:0, qShownAt:0,
     skipped:0, rebuildTotal:0, rebuildCount:new Map(),
+    unlockedTypes:new Set(),  // entity types the graph currently models
     history:[]               // {you, stack} per answer
   };
 
@@ -218,7 +223,6 @@
 
   // ---------- DOM ----------
   const $ = id => document.getElementById(id);
-  const layerEls = [...document.querySelectorAll(".layer")];
 
   // ---------- Canvas ----------
   const graph=$("graph"), gx=graph.getContext("2d");
@@ -229,6 +233,7 @@
 
   const nodes=[]; const edges=[]; const particles=[]; const popups=[];
   function addNode(ent){
+    if(!S.unlockedTypes.has(ent.type)){ S.unlockedTypes.add(ent.type); renderLegend(); } // a new type joins the graph
     const cx=W*0.5, cy=H*0.52; let x,y;
     if(nodes.length===0){ x=cx; y=cy; }
     else { // drop near a neighbour with jitter; the layout sim spreads everything apart
@@ -259,26 +264,43 @@
   function burst(x,y,n,type){ const col=TCOL[type]||"#7fb4ff"; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, sp=0.6+Math.random()*2; particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,r:1+Math.random()*2.2,col}); } }
   function popup(text,color){ popups.push({text,color,x:W*0.5,y:H*0.5,life:1,vy:-0.7}); }
 
-  // ---------- Stack mirror ----------
-  let stackSweep=0, stackLabel="idle", stackAgain=false;
+  // ---------- Legend + big reveal ----------
+  function renderLegend(){
+    const el=$("legend"); if(!el) return;
+    el.innerHTML = ["person","company","account","address","device","vessel"]
+      .filter(t=>S.unlockedTypes.has(t))
+      .map(t=>"<span><i style='background:"+TCOL[t]+"'></i>"+TNAME[t]+"</span>").join("");
+  }
+  let revealTimer=null;
+  function bigReveal(main, sub){
+    $("brMain").innerHTML=main; $("brSub").innerHTML=sub||"";
+    const el=$("bigReveal"); el.classList.add("on");
+    if(revealTimer) clearTimeout(revealTimer);
+    revealTimer=setTimeout(()=>el.classList.remove("on"), 1800);
+  }
+
+  // ---------- Stack (messaging only; no on-screen panel) ----------
+  // Each answered party is a rebuild the stack can't avoid. We tally it for the
+  // end-card contrast, but the stack is no longer drawn on the play screen.
   function stackRebuild(ent){
     const c=(S.rebuildCount.get(ent.name)||0)+1; S.rebuildCount.set(ent.name,c);
-    S.rebuildTotal++; $("rebuildTotal").textContent=S.rebuildTotal;
-    stackSweep=1; stackAgain=c>1; stackLabel=ent.name+(c>1?" &mdash; <span class='again'>"+ordinal(c)+" time</span>":"");
-    $("nowbuild").innerHTML="rebuilding <b>"+ent.name+"</b>"+(c>1?" <span class='again'>("+ordinal(c)+" time)</span>":"");
-    blip(c>1?120:170,0.14,"sawtooth",0.07);
+    S.rebuildTotal++;
   }
-  function ordinal(n){ const s=["th","st","nd","rd"], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
 
   // ---------- Question flow ----------
   function genQuestion(){
-    const knownArr=[...S.known.values()];
-    const unknown=POOL.filter(e=>!S.known.has(e.name));
-    const pReuse = knownArr.length===0 ? 0 : Math.min(0.82, 0.30 + S.known.size*0.018);
-    let ent, isReuse;
-    if(knownArr.length>0 && (unknown.length===0 || Math.random()<pReuse)){ ent=knownArr[(Math.random()*knownArr.length)|0]; isReuse=true; }
-    else { ent=unknown[(Math.random()*unknown.length)|0]; isReuse=false; }
-    S.q={ent,isReuse};
+    let ent, isReuse=false, newType=false;
+    // a whole new entity type arrives once the roster is big enough
+    const intro=TYPE_INTRO.find(ti=>!S.unlockedTypes.has(ti.type) && S.known.size>=ti.at && POOL.some(e=>e.type===ti.type && !S.known.has(e.name)));
+    if(intro){ ent=POOL.find(e=>e.type===intro.type && !S.known.has(e.name)); isReuse=false; newType=true; }
+    else {
+      const knownArr=[...S.known.values()];
+      const unknown=POOL.filter(e=>!S.known.has(e.name) && S.unlockedTypes.has(e.type)); // only modelled types appear as rows
+      const pReuse = knownArr.length===0 ? 0 : Math.min(0.82, 0.30 + S.known.size*0.018);
+      if(knownArr.length>0 && (unknown.length===0 || Math.random()<pReuse)){ ent=knownArr[(Math.random()*knownArr.length)|0]; isReuse=true; }
+      else { ent=unknown[(Math.random()*unknown.length)|0]; isReuse=false; }
+    }
+    S.q={ent,isReuse,newType}; S.qShownAt=performance.now();
     $("chip").textContent=ent.name;
     const tt=$("typetag"); tt.textContent=ent.type; tt.style.background=TCOL[ent.type];
     $("prompt").textContent=PROMPTS[(Math.random()*PROMPTS.length)|0].replace("{E}",ent.name);
@@ -289,17 +311,33 @@
     if(!S.started||S.ended||!S.q) return;
     const {ent,isReuse}=S.q;
     const correct=(choice==='reuse')===isReuse;
+    // speed weight: answer fast for up to 3x, decaying to 1x over ~3.4s. Studying is allowed, it just costs the bonus.
+    const elapsed=(performance.now()-S.qShownAt)/1000;
+    const speedMult=Math.max(1,Math.min(3,3.2-elapsed*0.65));
+    const tier = speedMult>=2.6?"LIGHTNING ":speedMult>=1.9?"FAST ":speedMult>=1.3?"QUICK ":"";
+
+    if(S.q.newType && choice==='new'){
+      // structural change: the ontology absorbs a whole new entity type with one mapping
+      addNode(ent); S.known.set(ent.name,ent); stackRebuild(ent);
+      const pts=Math.round(600*speedMult); S.score+=pts; $("score").textContent=S.score.toLocaleString();
+      bigReveal("New entity type: "+TNAME[ent.type], "You map it once and carry on. The stack would re-architect, and the downstream breaks.");
+      popup("+"+pts+" new type","#7ed957");
+      chord([392,523,659,880],0.34);
+      S.history.push({you:S.known.size,stack:0}); genQuestion(); return;
+    }
 
     if(correct && isReuse){
-      S.combo++; const mult=1+S.combo; S.skipped++; // you remembered, you skipped a rebuild
-      pulseNode(ent.name); stackRebuild(ent); // show the stack doing it anyway
-      popup("+skip","#FBAE40"); popup(SEEN_LINES[(Math.random()*SEEN_LINES.length)|0],"#7fb4ff");
+      S.combo++; const mult=Math.min(10,1+S.combo); S.skipped++; // remembered: skipped a rebuild
+      const pts=Math.round(100*mult*speedMult); S.score+=pts;
+      pulseNode(ent.name); stackRebuild(ent);
+      popup(tier+"+"+pts,"#FBAE40"); popup(SEEN_LINES[(Math.random()*SEEN_LINES.length)|0],"#7fb4ff");
       $("combo").classList.add("on"); $("comboX").textContent="x"+mult;
-      $("skipped").textContent=S.skipped;
+      $("skipped").textContent=S.skipped; $("score").textContent=S.score.toLocaleString();
       blip(520+S.combo*55,0.12,"triangle",0.2); blip(800+S.combo*60,0.10,"sine",0.12);
     } else if(correct && !isReuse){
-      addNode(ent); S.known.set(ent.name,ent); stackRebuild(ent); // stack rebuilds the new one too
-      popup("+ modeled","#bcd8ff"); $("recalled").textContent=S.known.size;
+      addNode(ent); S.known.set(ent.name,ent); stackRebuild(ent);
+      const pts=Math.round(40*speedMult); S.score+=pts;
+      popup(tier+"+"+pts,"#bcd8ff"); $("score").textContent=S.score.toLocaleString();
       blip(330,0.10,"sine",0.16);
     } else {
       // memory slip
@@ -307,10 +345,10 @@
       renderHearts();
       if(choice==='reuse'){ popup("False memory!","#F26B43"); } // claimed seen, it's new
       else { popup("You forgot it!","#F26B43"); }            // said new, already had it
-      $("stackcol").classList.add("shake"); setTimeout(()=>$("stackcol").classList.remove("shake"),320);
+      $("chip").classList.add("shake"); setTimeout(()=>$("chip").classList.remove("shake"),320);
       blip(140,0.2,"sawtooth",0.14);
       // if it was actually known and you said new, no dup; if actually new and you said seen, model it now so play continues
-      if(!isReuse && !S.known.has(ent.name)){ addNode(ent); S.known.set(ent.name,ent); $("recalled").textContent=S.known.size; }
+      if(!isReuse && !S.known.has(ent.name)){ addNode(ent); S.known.set(ent.name,ent); }
       if(S.slips>=MAX_SLIPS){ S.history.push({you:S.known.size,stack:0}); endGame(); return; }
     }
 
@@ -322,17 +360,12 @@
 
   // ---------- Render ----------
   function frame(now){
-    // stack sweep visual
-    if(stackSweep>0){ stackSweep=Math.max(0,stackSweep-0.05); const frac=1-stackSweep;
-      layerEls.forEach((el,i)=>{ const seg=(frac*5)-i; el.querySelector(".lfill").style.width=(Math.max(0,Math.min(1,seg))*100).toFixed(0)+"%"; });
-      if(stackSweep<=0){ setTimeout(()=>{ if(stackSweep<=0){ layerEls.forEach(el=>el.querySelector(".lfill").style.width="0%"); $("nowbuild").innerHTML="waiting for the next question"; } },120); }
-    }
     if(nodes.length>1){ relax(); relax(); } // settle the layout each frame
     gx.clearRect(0,0,W,H);
     for(const e of edges){ const a=nodes[e.a],b=nodes[e.b]; if(!a||!b)continue; const age=Math.min(1,(now-e.born)/350); gx.strokeStyle="rgba(120,170,255,"+(0.08+0.20*age)+")"; gx.lineWidth=1.3; gx.beginPath(); gx.moveTo(a.x,a.y); gx.lineTo(a.x+(b.x-a.x)*age,a.y+(b.y-a.y)*age); gx.stroke(); }
     for(const n of nodes){ n.r+=(n.tr-n.r)*0.18; if(n.pulse>1) n.pulse+=(1-n.pulse)*0.08; const rr=n.r*n.pulse; const col=TCOL[n.type]||"#6bb0ff";
       gx.save(); gx.shadowBlur=14+(n.pulse-1)*30; gx.shadowColor=col; drawShape(n.type,n.x,n.y,rr,col); gx.restore();
-      gx.font="700 9px Arial"; gx.textAlign="center"; gx.lineWidth=3; gx.lineJoin="round"; gx.strokeStyle="rgba(0,7,31,0.92)"; gx.strokeText(n.label,n.x,n.y+rr+11); gx.fillStyle="rgba(228,240,255,0.95)"; gx.fillText(n.label,n.x,n.y+rr+11); }
+      gx.font="700 11px Arial"; gx.textAlign="center"; gx.lineWidth=3.2; gx.lineJoin="round"; gx.strokeStyle="rgba(0,7,31,0.92)"; gx.strokeText(n.label,n.x,n.y+rr+12); gx.fillStyle="rgba(232,242,255,0.97)"; gx.fillText(n.label,n.x,n.y+rr+12); }
     fxx.clearRect(0,0,W,H);
     for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; p.life-=0.022; if(p.life<=0){particles.splice(i,1);continue;} fxx.globalAlpha=Math.max(0,p.life); fxx.fillStyle=p.col; fxx.beginPath(); fxx.arc(p.x,p.y,p.r,0,Math.PI*2); fxx.fill(); }
     fxx.globalAlpha=1;
@@ -346,6 +379,8 @@
     if(type==="company"){ const s=r*1.7; gx.roundRect(x-s/2,y-s/2,s,s,3); }
     else if(type==="account"){ gx.moveTo(x,y-r); gx.lineTo(x+r,y); gx.lineTo(x,y+r); gx.lineTo(x-r,y); gx.closePath(); }
     else if(type==="address"){ gx.moveTo(x,y-r); gx.lineTo(x+r*0.92,y+r*0.7); gx.lineTo(x-r*0.92,y+r*0.7); gx.closePath(); }
+    else if(type==="device"){ for(let i=0;i<6;i++){ const a=Math.PI/6+i*Math.PI/3, px=x+Math.cos(a)*r, py=y+Math.sin(a)*r; i?gx.lineTo(px,py):gx.moveTo(px,py); } gx.closePath(); }
+    else if(type==="vessel"){ for(let i=0;i<5;i++){ const a=-Math.PI/2+i*2*Math.PI/5, px=x+Math.cos(a)*r, py=y+Math.sin(a)*r; i?gx.lineTo(px,py):gx.moveTo(px,py); } gx.closePath(); }
     else { gx.arc(x,y,r,0,Math.PI*2); }
     gx.fill();
   }
@@ -353,6 +388,7 @@
   // ---------- End ----------
   function endGame(){
     if(S.ended) return; S.ended=true;
+    $("endScore").textContent=S.score.toLocaleString();
     $("endSkip").textContent=S.skipped;
     $("endRecall").textContent=S.known.size;
     const repeats=S.rebuildTotal - S.rebuildCount.size;
@@ -379,17 +415,16 @@
 
   // ---------- Control ----------
   function start(){
-    Object.assign(S,{ started:true, ended:false, known:new Map(), q:null, combo:0, slips:0, skipped:0, rebuildTotal:0, rebuildCount:new Map(), history:[] });
+    Object.assign(S,{ started:true, ended:false, known:new Map(), q:null, combo:0, slips:0, score:0, qShownAt:0, skipped:0, rebuildTotal:0, rebuildCount:new Map(), unlockedTypes:new Set(START_TYPES), history:[] });
     nodes.length=0; edges.length=0; particles.length=0; popups.length=0;
-    layerEls.forEach(el=>el.querySelector(".lfill").style.width="0%");
     $("startOverlay").classList.add("hidden"); $("endOverlay").classList.add("hidden");
-    $("skipped").textContent="0"; $("rebuildTotal").textContent="0"; $("combo").classList.remove("on");
-    $("nowbuild").innerHTML="waiting for the next question"; renderHearts();
+    $("skipped").textContent="0"; $("score").textContent="0"; $("combo").classList.remove("on");
+    $("bigReveal").classList.remove("on"); renderHearts(); renderLegend();
     audio(); resize();
-    // seed the graph with a few parties across types
-    const shuffled=[...POOL].sort(()=>Math.random()-0.5).slice(0,SEED_COUNT);
+    // seed the graph from the starting types only (new types arrive later as their own event)
+    const seedable=POOL.filter(e=>START_TYPES.includes(e.type));
+    const shuffled=[...seedable].sort(()=>Math.random()-0.5).slice(0,SEED_COUNT);
     shuffled.forEach(e=>{ addNode(e); S.known.set(e.name,e); });
-    $("recalled").textContent=S.known.size;
     genQuestion();
   }
 
@@ -403,6 +438,7 @@
     else if(e.code==="ArrowRight"){ e.preventDefault(); answer('reuse'); }
     else if(e.code==="Space"){ e.preventDefault(); if(!S.started||S.ended) start(); }
   });
+
 
   resize(); requestAnimationFrame(frame);
 })();
