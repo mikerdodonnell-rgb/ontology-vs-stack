@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ontology vs The Stack</title>
+<style>
+  :root {
+    --dw-blue: #11509F; --dw-blue-mid: #346CAE; --dw-blue-light: #4F81BD;
+    --dw-navy: #000C36; --dw-orange: #F26B43; --dw-amber: #FBAE40;
+    --dw-caption: #91A3C5; --font: Arial, Helvetica, sans-serif;
+    --t-person: #6bb0ff; --t-company: #5ec8c0; --t-account: #f0a24a; --t-address: #b48ff0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: radial-gradient(1200px 800px at 30% -10%, #0a1a52 0%, var(--dw-navy) 55%, #00071f 100%); color:#fff; font-family:var(--font); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  #app { height: 100vh; display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; padding: 12px 18px 14px; max-width: 1240px; margin: 0 auto; }
+
+  header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+  .hL { display:flex; align-items:center; gap:10px; }
+  .hR { display:flex; align-items:center; gap:10px; justify-content:flex-end; }
+  .lbl { font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--dw-caption); }
+  .recalled .n { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; line-height:1; }
+  .hearts { text-align:center; }
+  .hearts .row { font-size: 20px; letter-spacing: 4px; line-height:1; }
+  .skip { text-align:right; }
+  .skip .n { font-size: 30px; font-weight: 800; color: var(--dw-orange); font-variant-numeric: tabular-nums; line-height:1; text-shadow: 0 0 18px rgba(242,107,67,.4); }
+  #mute { position:absolute; top:12px; right:18px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14); color:#fff; width:32px; height:32px; border-radius:8px; cursor:pointer; }
+  .title { text-align:center; font-size:13px; color:var(--dw-caption); }
+  .title b { color:#fff; font-weight:700; }
+
+  .arena { display:grid; grid-template-columns: 1fr minmax(300px,360px) 250px; gap:14px; min-height:0; }
+  .panel { position:relative; border-radius:16px; overflow:hidden; }
+  .graphwrap { border:1px solid rgba(80,130,220,.25); background:radial-gradient(600px 380px at 50% 55%, rgba(17,80,159,.18), rgba(0,12,54,0) 70%); }
+  #graph,#fx { position:absolute; inset:0; width:100%; height:100%; display:block; } #fx{pointer-events:none;}
+  .ptag { position:absolute; top:10px; left:14px; font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:var(--dw-caption); z-index:2; }
+  .legend { position:absolute; top:8px; right:12px; z-index:2; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; max-width:60%; }
+  .legend span { font-size:9px; color:var(--dw-caption); display:flex; align-items:center; gap:4px; }
+  .legend i { width:8px; height:8px; display:inline-block; }
+  .combo { position:absolute; left:50%; bottom:14px; transform:translateX(-50%); text-align:center; pointer-events:none; opacity:0; transition:opacity .15s; z-index:2; }
+  .combo.on { opacity:1; }
+  .combo .x { font-size:36px; font-weight:800; color:var(--dw-amber); text-shadow:0 0 22px rgba(251,174,64,.7); line-height:1; }
+  .combo .t { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--dw-caption); }
+
+  .center { display:grid; grid-template-rows: 1fr auto auto; gap:12px; }
+  .qcard { border-radius:16px; padding:18px; display:grid; align-content:center; justify-items:center; gap:12px; text-align:center; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.14); }
+  .qcard .kick { font-size:10px; letter-spacing:1.8px; text-transform:uppercase; color:var(--dw-caption); }
+  .chiprow { display:flex; align-items:center; gap:10px; }
+  .typetag { font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase; padding:5px 9px; border-radius:8px; color:#04122e; }
+  .chip { font-size:22px; font-weight:800; letter-spacing:.3px; padding:10px 18px; border-radius:12px; background:linear-gradient(180deg, rgba(17,80,159,.5), rgba(17,80,159,.25)); border:1px solid rgba(120,170,255,.5); box-shadow:0 6px 20px rgba(17,80,159,.35); color:#eaf2ff; }
+  .qcard .prompt { font-size:14px; color:#cdd6ea; line-height:1.3; max-width:290px; }
+  .decide { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .dbtn { border:none; cursor:pointer; border-radius:14px; padding:16px 10px; font-family:var(--font); font-size:17px; font-weight:800; color:#fff; line-height:1.1; transition:transform .06s, box-shadow .2s; }
+  .dbtn .k { display:block; font-size:10px; font-weight:600; letter-spacing:1px; color:rgba(255,255,255,.72); margin-top:4px; }
+  .dbtn.new { background:linear-gradient(180deg,#2f73d6,var(--dw-blue)); box-shadow:0 8px 20px rgba(17,80,159,.45); }
+  .dbtn.reuse { background:linear-gradient(180deg,#f7944f,var(--dw-orange)); box-shadow:0 8px 20px rgba(242,107,67,.4); }
+  .dbtn:active { transform:translateY(2px) scale(.98); }
+  .hint { text-align:center; font-size:11px; color:var(--dw-caption); }
+  .hint b { color:#cdd6ea; }
+
+  .stackcol { border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); padding:12px; display:grid; grid-template-rows:auto auto 1fr auto; gap:8px; }
+  .stackcol h3 { font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--dw-caption); font-weight:700; }
+  .stackcol h3 span { color:#7b8696; }
+  .nowbuild { font-size:12px; color:var(--dw-caption); min-height:34px; display:grid; align-content:center; }
+  .nowbuild b { color:#fff; font-size:13px; } .nowbuild .again { color:var(--dw-orange); font-weight:700; }
+  .layers { display:grid; gap:6px; align-content:start; }
+  .layer { height:26px; border-radius:7px; display:flex; align-items:center; padding:0 9px; font-size:11px; letter-spacing:.3px; color:var(--dw-caption); background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07); position:relative; overflow:hidden; }
+  .layer .lfill { position:absolute; inset:0; width:0%; background:rgba(123,134,150,.5); transition:width .1s linear; }
+  .layer span { position:relative; z-index:1; }
+  .sfoot { font-size:11px; color:var(--dw-caption); text-align:center; line-height:1.35; }
+  .sfoot b { color:#aeb6c4; }
+  @keyframes shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-4px,1px)} 50%{transform:translate(3px,-2px)} 75%{transform:translate(-2px,2px)} }
+  .shake { animation: shake .32s; }
+
+  .overlay { position:fixed; inset:0; display:grid; place-items:center; z-index:50; background:rgba(0,7,31,.85); backdrop-filter:blur(4px); }
+  .overlay.hidden { display:none; }
+  .panelbox { width:min(660px,92vw); text-align:center; padding:30px; border-radius:20px; border:1px solid rgba(80,130,220,.3); background:linear-gradient(180deg, rgba(17,80,159,.18), rgba(0,12,54,.65)); }
+  .panelbox h2 { font-size:26px; margin-bottom:12px; }
+  .panelbox p { color:#cdd6ea; font-size:14px; line-height:1.55; margin-bottom:10px; }
+  .rules { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0 8px; text-align:left; }
+  .rule { padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); font-size:13px; }
+  .rule b { display:block; font-size:12px; letter-spacing:.5px; text-transform:uppercase; margin-bottom:4px; }
+  .rule.new b { color:#7fb4ff; } .rule.reuse b { color:var(--dw-amber); }
+  .playbtn { border:none; cursor:pointer; border-radius:14px; padding:14px 44px; font-family:var(--font); font-size:16px; font-weight:800; color:#fff; background:linear-gradient(180deg,#2f73d6,var(--dw-blue)); box-shadow:0 8px 22px rgba(17,80,159,.5); margin-top:14px; }
+  .playbtn:active { transform:translateY(2px); }
+  .tagline { margin-top:16px; font-size:12px; color:var(--dw-caption); } .tagline b { color:#7fb4ff; }
+  .heroStat { margin:14px 0 4px; } .heroStat .n { font-size:52px; font-weight:800; color:var(--dw-orange); line-height:1; font-variant-numeric:tabular-nums; text-shadow:0 0 26px rgba(242,107,67,.45); }
+  .heroStat .l { font-size:11px; letter-spacing:1.6px; text-transform:uppercase; color:var(--dw-caption); margin-top:8px; }
+  .subStats { display:flex; justify-content:center; gap:34px; margin:10px 0; }
+  .subStats .n { font-size:24px; font-weight:800; } .subStats .l { font-size:10px; letter-spacing:1.4px; text-transform:uppercase; color:var(--dw-caption); margin-top:4px; }
+  #curve { width:100%; height:120px; margin-top:6px; border-radius:10px; background:rgba(0,7,31,.4); border:1px solid rgba(255,255,255,.08); }
+</style>
+</head>
+<body>
+<button id="mute" title="Sound">&#128266;</button>
+<div id="app">
+  <header>
+    <div class="hL recalled"><div><div class="lbl">Parties remembered</div><div class="n" id="recalled">0</div></div></div>
+    <div class="hearts"><div class="lbl">Memory</div><div class="row" id="hearts">&#9679;&#9679;&#9679;</div></div>
+    <div class="hR skip"><div><div class="lbl">Rebuilds you skipped</div><div class="n" id="skipped">0</div></div></div>
+  </header>
+
+  <div class="title">You answer from <b>memory</b>. The stack has none, so it rebuilds every party, every time.</div>
+
+  <div class="arena">
+    <div class="panel graphwrap">
+      <canvas id="graph"></canvas>
+      <canvas id="fx"></canvas>
+      <div class="ptag">Your Knowledge Graph &middot; your memory</div>
+      <div class="legend">
+        <span><i style="background:var(--t-person)"></i>Person</span>
+        <span><i style="background:var(--t-company)"></i>Company</span>
+        <span><i style="background:var(--t-account)"></i>Account</span>
+        <span><i style="background:var(--t-address)"></i>Address</span>
+      </div>
+      <div class="combo" id="combo"><div class="x" id="comboX">x2</div><div class="t">memory combo</div></div>
+    </div>
+
+    <div class="center">
+      <div class="qcard">
+        <div class="kick">Have you seen this party before?</div>
+        <div class="chiprow"><span class="typetag" id="typetag">PERSON</span><span class="chip" id="chip">&mdash;</span></div>
+        <div class="prompt" id="prompt">&nbsp;</div>
+      </div>
+      <div class="decide">
+        <button class="dbtn new" id="btnNew">New<span class="k">&#9664; model it</span></button>
+        <button class="dbtn reuse" id="btnReuse">Seen it<span class="k">reuse from memory &#9654;</span></button>
+      </div>
+      <div class="hint">Already in your graph? <b>Seen it</b>. First time? <b>New</b>. Keys <b>&#9664; &#9654;</b>. Three memory slips and you're out.</div>
+    </div>
+
+    <div class="panel stackcol" id="stackcol">
+      <h3>The Stack <span>&middot; no memory</span></h3>
+      <div class="nowbuild" id="nowbuild">idle</div>
+      <div class="layers" id="layers">
+        <div class="layer" data-l="0"><div class="lfill"></div><span>Ingest</span></div>
+        <div class="layer" data-l="1"><div class="lfill"></div><span>Stage</span></div>
+        <div class="layer" data-l="2"><div class="lfill"></div><span>Model</span></div>
+        <div class="layer" data-l="3"><div class="lfill"></div><span>Mart</span></div>
+        <div class="layer" data-l="4"><div class="lfill"></div><span>Serve</span></div>
+      </div>
+      <div class="sfoot">Re-derivations so far: <b id="rebuildTotal">0</b><br>It never learns a party.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Start -->
+<div class="overlay" id="startOverlay">
+  <div class="panelbox">
+    <h2>Memory vs The Rebuild</h2>
+    <p>Questions name a <b>party</b>: a person, company, account or address. Some you've met before, some are new.</p>
+    <div class="rules">
+      <div class="rule reuse"><b>Seen it &#9654;</b>It's already in your graph. Answer from memory, instantly. Combo builds.</div>
+      <div class="rule new"><b>&#9664; New</b>First time. Add it to your graph once, then you'll remember it.</div>
+    </div>
+    <p>Every time you recognise a party, you <b>skip a rebuild</b> the stack can't. It re-derives the same parties forever, because it remembers nothing.</p>
+    <p style="color:#fff"><b>Three memory slips and the run ends. How many parties can you hold?</b></p>
+    <button class="playbtn" id="startBtn">Start &#9654;</button>
+    <div class="tagline">The graph is your <b>externalised memory</b>. That's the whole thesis.</div>
+  </div>
+</div>
+
+<!-- End -->
+<div class="overlay hidden" id="endOverlay">
+  <div class="panelbox">
+    <h2 id="endTitle">Your Memory Slipped</h2>
+    <div class="heroStat"><div class="n" id="endSkip">0</div><div class="l">Rebuilds your memory skipped</div></div>
+    <div class="subStats">
+      <div><div class="n" id="endRecall" style="color:#5aa0ff">0</div><div class="l">Parties remembered</div></div>
+      <div><div class="n" id="endWaste" style="color:#aeb6c4">0</div><div class="l">Stack re-derivations</div></div>
+    </div>
+    <canvas id="curve"></canvas>
+    <p id="endBody"></p>
+    <button class="playbtn" id="againBtn">Play Again</button>
+    <div class="tagline">You retained every party. The stack retained <b>nothing</b> and kept rebuilding.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- Entities (typed) ----------
+  const T = { person:"person", company:"company", account:"account", address:"address" };
+  const TCOL = { person:"#6bb0ff", company:"#5ec8c0", account:"#f0a24a", address:"#b48ff0" };
+  const POOL = [
+    ["K. Novak",T.person],["R. Santos",T.person],["M. Okonkwo",T.person],["Cyrus Vale",T.person],
+    ["L. Petrov",T.person],["D. Halvorsen",T.person],["A. Cho",T.person],["J. Mwangi",T.person],
+    ["Meridian Holdings",T.company],["Acme Freight",T.company],["Atlas Mining",T.company],["Helix Labs",T.company],
+    ["Quill Media",T.company],["Saturn Logistics",T.company],["Hale & Co",T.company],["Zephyr Trading",T.company],
+    ["Nile Imports",T.company],["Pearl Group",T.company],
+    ["Onyx Pay",T.account],["Vortex Capital",T.account],["Indigo Fund",T.account],["Dune Capital",T.account],
+    ["Cobalt Bank",T.account],["Orion Bank",T.account],["Delta Trust",T.account],
+    ["Pier 7 Depot",T.address],["14 Marlow St",T.address],["Quay Block C",T.address],["Unit 9 Harbridge",T.address],["West Dock 3",T.address]
+  ].map(([name,type])=>({name,type}));
+  const SEED_COUNT = 5;
+  const PROMPTS = [
+    "Trace the funds through {E}.","Who is connected to {E}?","Flag every account tied to {E}.",
+    "Is {E} the same party we've seen?","Map the network behind {E}.","What links {E} to the case?",
+    "Resolve {E} across all systems.","Who really controls {E}?"
+  ];
+  const SEEN_LINES = ["Remembered.","Seen it.","Already mapped.","The graph knew.","No rebuild.","Recalled."];
+  const MAX_SLIPS = 3;
+
+  // ---------- State ----------
+  const S = {
+    started:false, ended:false,
+    known:new Map(),        // name -> {name,type}
+    q:null, combo:0, slips:0,
+    skipped:0, rebuildTotal:0, rebuildCount:new Map(),
+    history:[]               // {you, stack} per answer
+  };
+
+  // ---------- Audio ----------
+  let actx=null, muted=false;
+  function audio(){ if(!actx){ try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){} } return actx; }
+  function blip(f,dur=0.12,type="sine",g=0.18){ if(muted)return; const a=audio(); if(!a)return; const o=a.createOscillator(),gn=a.createGain(); o.type=type; o.frequency.value=f; o.connect(gn); gn.connect(a.destination); const t=a.currentTime; gn.gain.setValueAtTime(0,t); gn.gain.linearRampToValueAtTime(g,t+0.01); gn.gain.exponentialRampToValueAtTime(0.0001,t+dur); o.start(t); o.stop(t+dur+0.02); }
+  function chord(fs,dur=0.3){ fs.forEach((f,i)=>setTimeout(()=>blip(f,dur,"triangle",0.16),i*55)); }
+
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const layerEls = [...document.querySelectorAll(".layer")];
+
+  // ---------- Canvas ----------
+  const graph=$("graph"), gx=graph.getContext("2d");
+  const fx=$("fx"), fxx=fx.getContext("2d");
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+  function resize(){ const r=graph.parentElement.getBoundingClientRect(); W=r.width; H=r.height; [graph,fx].forEach(c=>{c.width=W*DPR;c.height=H*DPR;}); gx.setTransform(DPR,0,0,DPR,0,0); fxx.setTransform(DPR,0,0,DPR,0,0); }
+  window.addEventListener("resize",resize);
+
+  const nodes=[]; const edges=[]; const particles=[]; const popups=[];
+  function addNode(ent){
+    const cx=W*0.5, cy=H*0.52; let x,y;
+    if(nodes.length===0){ x=cx; y=cy; }
+    else { // drop near a neighbour with jitter; the layout sim spreads everything apart
+      const a=nodes[(Math.random()*nodes.length)|0]; const ang=Math.random()*Math.PI*2; const d=30+Math.random()*30;
+      x=a.x+Math.cos(ang)*d; y=a.y+Math.sin(ang)*d; }
+    const n={name:ent.name,type:ent.type,label:ent.name.split(" ")[0].replace(/[#&]/g,"").slice(0,9),x,y,vx:0,vy:0,r:0,tr:10,pulse:1.7};
+    nodes.push(n);
+    const others=nodes.slice(0,-1).map((m,i)=>({i,d:Math.hypot(m.x-x,m.y-y)})).sort((a,b)=>a.d-b.d);
+    for(let k=0;k<Math.min(2,others.length);k++) edges.push({a:nodes.length-1,b:others[k].i,born:performance.now()});
+    burst(x,y,12,n.type);
+    return n;
+  }
+  // force-directed layout: repel all pairs, spring the edges, gently centre, clamp to panel
+  function relax(){
+    const cx=W*0.5, cy=H*0.52, padX=48, padT=30, padB=46, N=nodes.length;
+    for(let i=0;i<N;i++){ const a=nodes[i]; a.vx+=(cx-a.x)*0.006; a.vy+=(cy-a.y)*0.006; }
+    for(let i=0;i<N;i++){ for(let j=i+1;j<N;j++){ const a=nodes[i],b=nodes[j];
+      let dx=a.x-b.x, dy=a.y-b.y, d2=dx*dx+dy*dy; if(d2<0.01){ dx=Math.random()-0.5; dy=Math.random()-0.5; d2=1; }
+      const d=Math.sqrt(d2), f=Math.min(9, 4200/d2), nx=dx/d, ny=dy/d;
+      a.vx+=nx*f; a.vy+=ny*f; b.vx-=nx*f; b.vy-=ny*f; } }
+    for(const e of edges){ const a=nodes[e.a],b=nodes[e.b]; if(!a||!b)continue;
+      let dx=b.x-a.x, dy=b.y-a.y; const d=Math.hypot(dx,dy)||1, diff=(d-92)*0.018, nx=dx/d, ny=dy/d;
+      a.vx+=nx*diff; a.vy+=ny*diff; b.vx-=nx*diff; b.vy-=ny*diff; }
+    for(const a of nodes){ a.vx*=0.80; a.vy*=0.80; a.x+=a.vx; a.y+=a.vy;
+      a.x=Math.max(padX,Math.min(W-padX,a.x)); a.y=Math.max(padT,Math.min(H-padB,a.y)); }
+  }
+  function pulseNode(name){ const n=nodes.find(m=>m.name===name); if(n){ n.pulse=2.2; burst(n.x,n.y,22,n.type); } }
+  function burst(x,y,n,type){ const col=TCOL[type]||"#7fb4ff"; for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, sp=0.6+Math.random()*2; particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,r:1+Math.random()*2.2,col}); } }
+  function popup(text,color){ popups.push({text,color,x:W*0.5,y:H*0.5,life:1,vy:-0.7}); }
+
+  // ---------- Stack mirror ----------
+  let stackSweep=0, stackLabel="idle", stackAgain=false;
+  function stackRebuild(ent){
+    const c=(S.rebuildCount.get(ent.name)||0)+1; S.rebuildCount.set(ent.name,c);
+    S.rebuildTotal++; $("rebuildTotal").textContent=S.rebuildTotal;
+    stackSweep=1; stackAgain=c>1; stackLabel=ent.name+(c>1?" &mdash; <span class='again'>"+ordinal(c)+" time</span>":"");
+    $("nowbuild").innerHTML="rebuilding <b>"+ent.name+"</b>"+(c>1?" <span class='again'>("+ordinal(c)+" time)</span>":"");
+    blip(c>1?120:170,0.14,"sawtooth",0.07);
+  }
+  function ordinal(n){ const s=["th","st","nd","rd"], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+
+  // ---------- Question flow ----------
+  function genQuestion(){
+    const knownArr=[...S.known.values()];
+    const unknown=POOL.filter(e=>!S.known.has(e.name));
+    const pReuse = knownArr.length===0 ? 0 : Math.min(0.82, 0.30 + S.known.size*0.018);
+    let ent, isReuse;
+    if(knownArr.length>0 && (unknown.length===0 || Math.random()<pReuse)){ ent=knownArr[(Math.random()*knownArr.length)|0]; isReuse=true; }
+    else { ent=unknown[(Math.random()*unknown.length)|0]; isReuse=false; }
+    S.q={ent,isReuse};
+    $("chip").textContent=ent.name;
+    const tt=$("typetag"); tt.textContent=ent.type; tt.style.background=TCOL[ent.type];
+    $("prompt").textContent=PROMPTS[(Math.random()*PROMPTS.length)|0].replace("{E}",ent.name);
+  }
+
+  // ---------- Answer ----------
+  function answer(choice){ // 'new' | 'reuse'
+    if(!S.started||S.ended||!S.q) return;
+    const {ent,isReuse}=S.q;
+    const correct=(choice==='reuse')===isReuse;
+
+    if(correct && isReuse){
+      S.combo++; const mult=1+S.combo; S.skipped++; // you remembered, you skipped a rebuild
+      pulseNode(ent.name); stackRebuild(ent); // show the stack doing it anyway
+      popup("+skip","#FBAE40"); popup(SEEN_LINES[(Math.random()*SEEN_LINES.length)|0],"#7fb4ff");
+      $("combo").classList.add("on"); $("comboX").textContent="x"+mult;
+      $("skipped").textContent=S.skipped;
+      blip(520+S.combo*55,0.12,"triangle",0.2); blip(800+S.combo*60,0.10,"sine",0.12);
+    } else if(correct && !isReuse){
+      addNode(ent); S.known.set(ent.name,ent); stackRebuild(ent); // stack rebuilds the new one too
+      popup("+ modeled","#bcd8ff"); $("recalled").textContent=S.known.size;
+      blip(330,0.10,"sine",0.16);
+    } else {
+      // memory slip
+      S.combo=0; $("combo").classList.remove("on"); S.slips++;
+      renderHearts();
+      if(choice==='reuse'){ popup("False memory!","#F26B43"); } // claimed seen, it's new
+      else { popup("You forgot it!","#F26B43"); }            // said new, already had it
+      $("stackcol").classList.add("shake"); setTimeout(()=>$("stackcol").classList.remove("shake"),320);
+      blip(140,0.2,"sawtooth",0.14);
+      // if it was actually known and you said new, no dup; if actually new and you said seen, model it now so play continues
+      if(!isReuse && !S.known.has(ent.name)){ addNode(ent); S.known.set(ent.name,ent); $("recalled").textContent=S.known.size; }
+      if(S.slips>=MAX_SLIPS){ S.history.push({you:S.known.size,stack:0}); endGame(); return; }
+    }
+
+    S.history.push({you:S.known.size, stack:0});
+    genQuestion();
+  }
+
+  function renderHearts(){ const left=Math.max(0,MAX_SLIPS-S.slips); $("hearts").innerHTML="<span style='color:#6bb0ff'>"+"&#9679;".repeat(left)+"</span><span style='color:#3a4566'>"+"&#9675;".repeat(S.slips)+"</span>"; }
+
+  // ---------- Render ----------
+  function frame(now){
+    // stack sweep visual
+    if(stackSweep>0){ stackSweep=Math.max(0,stackSweep-0.05); const frac=1-stackSweep;
+      layerEls.forEach((el,i)=>{ const seg=(frac*5)-i; el.querySelector(".lfill").style.width=(Math.max(0,Math.min(1,seg))*100).toFixed(0)+"%"; });
+      if(stackSweep<=0){ setTimeout(()=>{ if(stackSweep<=0){ layerEls.forEach(el=>el.querySelector(".lfill").style.width="0%"); $("nowbuild").innerHTML="waiting for the next question"; } },120); }
+    }
+    if(nodes.length>1){ relax(); relax(); } // settle the layout each frame
+    gx.clearRect(0,0,W,H);
+    for(const e of edges){ const a=nodes[e.a],b=nodes[e.b]; if(!a||!b)continue; const age=Math.min(1,(now-e.born)/350); gx.strokeStyle="rgba(120,170,255,"+(0.08+0.20*age)+")"; gx.lineWidth=1.3; gx.beginPath(); gx.moveTo(a.x,a.y); gx.lineTo(a.x+(b.x-a.x)*age,a.y+(b.y-a.y)*age); gx.stroke(); }
+    for(const n of nodes){ n.r+=(n.tr-n.r)*0.18; if(n.pulse>1) n.pulse+=(1-n.pulse)*0.08; const rr=n.r*n.pulse; const col=TCOL[n.type]||"#6bb0ff";
+      gx.save(); gx.shadowBlur=14+(n.pulse-1)*30; gx.shadowColor=col; drawShape(n.type,n.x,n.y,rr,col); gx.restore();
+      gx.font="700 9px Arial"; gx.textAlign="center"; gx.lineWidth=3; gx.lineJoin="round"; gx.strokeStyle="rgba(0,7,31,0.92)"; gx.strokeText(n.label,n.x,n.y+rr+11); gx.fillStyle="rgba(228,240,255,0.95)"; gx.fillText(n.label,n.x,n.y+rr+11); }
+    fxx.clearRect(0,0,W,H);
+    for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.02; p.life-=0.022; if(p.life<=0){particles.splice(i,1);continue;} fxx.globalAlpha=Math.max(0,p.life); fxx.fillStyle=p.col; fxx.beginPath(); fxx.arc(p.x,p.y,p.r,0,Math.PI*2); fxx.fill(); }
+    fxx.globalAlpha=1;
+    for(let i=popups.length-1;i>=0;i--){ const u=popups[i]; u.y+=u.vy; u.life-=0.012; u.vy*=0.99; if(u.life<=0){popups.splice(i,1);continue;} fxx.globalAlpha=Math.max(0,Math.min(1,u.life*1.4)); fxx.fillStyle=u.color; fxx.font="700 "+(u.text.length>7?14:22)+"px Arial"; fxx.textAlign="center"; fxx.fillText(u.text,u.x+(i%2?22:-22),u.y); }
+    fxx.globalAlpha=1;
+    requestAnimationFrame(frame);
+  }
+  function drawShape(type,x,y,r,col){
+    const g=gx.createRadialGradient(x,y,1,x,y,r); g.addColorStop(0,"#ffffff"); g.addColorStop(0.5,col); g.addColorStop(1,col); gx.fillStyle=g;
+    gx.beginPath();
+    if(type==="company"){ const s=r*1.7; gx.roundRect(x-s/2,y-s/2,s,s,3); }
+    else if(type==="account"){ gx.moveTo(x,y-r); gx.lineTo(x+r,y); gx.lineTo(x,y+r); gx.lineTo(x-r,y); gx.closePath(); }
+    else if(type==="address"){ gx.moveTo(x,y-r); gx.lineTo(x+r*0.92,y+r*0.7); gx.lineTo(x-r*0.92,y+r*0.7); gx.closePath(); }
+    else { gx.arc(x,y,r,0,Math.PI*2); }
+    gx.fill();
+  }
+
+  // ---------- End ----------
+  function endGame(){
+    if(S.ended) return; S.ended=true;
+    $("endSkip").textContent=S.skipped;
+    $("endRecall").textContent=S.known.size;
+    const repeats=S.rebuildTotal - S.rebuildCount.size;
+    $("endWaste").textContent=S.rebuildTotal;
+    $("endTitle").textContent = S.skipped>=20 ? "Your Memory Held" : "Your Memory Slipped";
+    $("endBody").innerHTML="You remembered <b>"+S.known.size+"</b> parties and skipped <b>"+S.skipped+"</b> rebuilds. The stack re-derived <b>"+S.rebuildTotal+"</b> times, <b>"+repeats+"</b> of them pure repetition, because it kept nothing.";
+    $("endOverlay").classList.remove("hidden");
+    requestAnimationFrame(drawCurve); setTimeout(drawCurve,60);
+    chord([523,659,784,1047,1319],0.5);
+  }
+  function drawCurve(){
+    const c=$("curve"); const r=c.getBoundingClientRect(); if(r.width<4) return; c.width=r.width*DPR; c.height=r.height*DPR;
+    const cx=c.getContext("2d"); cx.setTransform(DPR,0,0,DPR,0,0); const w=r.width,h=r.height; cx.clearRect(0,0,w,h);
+    const hist=S.history.length?S.history:[{you:0,stack:0}]; const maxV=Math.max(4,...hist.map(p=>p.you));
+    const pad=12;
+    // stack line: flat at zero
+    cx.strokeStyle="#aeb6c4"; cx.lineWidth=2.2; cx.beginPath(); cx.moveTo(pad,h-pad); cx.lineTo(w-pad,h-pad); cx.stroke();
+    // you line: rising
+    cx.strokeStyle="#5aa0ff"; cx.lineWidth=2.6; cx.shadowBlur=10; cx.shadowColor="#5aa0ff"; cx.beginPath();
+    hist.forEach((p,i)=>{ const x=pad+(w-2*pad)*(i/Math.max(1,hist.length-1)); const y=h-pad-(h-2*pad)*(p.you/maxV); i?cx.lineTo(x,y):cx.moveTo(x,y); }); cx.stroke(); cx.shadowBlur=0;
+    cx.fillStyle="#5aa0ff"; cx.font="700 11px Arial"; cx.fillText("You remember",pad+2,16);
+    cx.fillStyle="#aeb6c4"; cx.fillText("Stack remembers (0)",pad+2,h-pad-6);
+  }
+
+  // ---------- Control ----------
+  function start(){
+    Object.assign(S,{ started:true, ended:false, known:new Map(), q:null, combo:0, slips:0, skipped:0, rebuildTotal:0, rebuildCount:new Map(), history:[] });
+    nodes.length=0; edges.length=0; particles.length=0; popups.length=0;
+    layerEls.forEach(el=>el.querySelector(".lfill").style.width="0%");
+    $("startOverlay").classList.add("hidden"); $("endOverlay").classList.add("hidden");
+    $("skipped").textContent="0"; $("rebuildTotal").textContent="0"; $("combo").classList.remove("on");
+    $("nowbuild").innerHTML="waiting for the next question"; renderHearts();
+    audio(); resize();
+    // seed the graph with a few parties across types
+    const shuffled=[...POOL].sort(()=>Math.random()-0.5).slice(0,SEED_COUNT);
+    shuffled.forEach(e=>{ addNode(e); S.known.set(e.name,e); });
+    $("recalled").textContent=S.known.size;
+    genQuestion();
+  }
+
+  $("btnNew").addEventListener("click",()=>answer('new'));
+  $("btnReuse").addEventListener("click",()=>answer('reuse'));
+  $("startBtn").addEventListener("click",start);
+  $("againBtn").addEventListener("click",start);
+  $("mute").addEventListener("click",e=>{ muted=!muted; e.currentTarget.innerHTML=muted?"&#128263;":"&#128266;"; });
+  window.addEventListener("keydown",e=>{
+    if(e.code==="ArrowLeft"){ e.preventDefault(); answer('new'); }
+    else if(e.code==="ArrowRight"){ e.preventDefault(); answer('reuse'); }
+    else if(e.code==="Space"){ e.preventDefault(); if(!S.started||S.ended) start(); }
+  });
+
+  resize(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
